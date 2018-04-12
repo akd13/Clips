@@ -90,9 +90,11 @@
 
 (defrule terminated
         (declare (salience 100))
-        (input ?f1 ?f2 ?f3 ?f11 ?f22 ?f33 ?f111 ?f222 ?f333)
-        (assigned ?d1 ?d2 ?d3 ?a1 ?a2 ?a3 ?b1 ?b2 ?b3)
+        ?input <-(input ?f1 ?f2 ?f3 ?f11 ?f22 ?f33 ?f111 ?f222 ?f333)
+        ?assigned <- (assigned ?d1 ?d2 ?d3 ?a1 ?a2 ?a3 ?b1 ?b2 ?b3)
         =>
+        (retract ?input)
+        (retract ?assigned)
         (printout t "First row is " ?f1 ?f11 ?f111 "-"?d1 ?a1 ?b1 crlf)
         (printout t "Second row is " ?f2 ?f22 ?f222 "-" ?d2 ?a2 ?b2 crlf)
         (printout t "Third row is " ?f3 ?f33 ?f333 "-" ?d3 ?a3 ?b3 crlf)
