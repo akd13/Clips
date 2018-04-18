@@ -185,7 +185,7 @@
         
         (declare (salience 30))
 
-        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
     
         (operand-length ?p)
         (result-length ?length_res)
@@ -276,7 +276,6 @@
         (loop-for-count (?cnt 1 ?l) do
                 (printout t " Letter " (nth$ ?cnt ?la) " is " (nth$ ?cnt ?na) crlf)
         )
-
         (printout t " Solution(s): " ?count crlf)
         (printout t crlf)
         (assert (done ?count))
@@ -323,13 +322,10 @@
         (loop-for-count (?cnt 1 ?oplength) do
                 (bind ?d (+ (- ?oplength ?cnt) 1))
                 (bind ?op1char (nth$ ?d ?op1array))
-                (assert (first ?op1char ?cnt))
-        )
-
-        (loop-for-count (?cnt 1 ?oplength) do
-                (bind ?d (+ (- ?oplength ?cnt) 1))
                 (bind ?op2char (nth$ ?d ?op2array))
+                (assert (first ?op1char ?cnt))
                 (assert (second ?op2char ?cnt))
+
         )
 
         (loop-for-count (?cnt 1 ?reslength) do
