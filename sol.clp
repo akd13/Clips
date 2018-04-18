@@ -116,7 +116,7 @@
        
         =>     
        
-        (retract ?previous_column)
+        ;(retract ?previous_column)
         (bind ?c (div (+ ?d1 ?d2) 10))
         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c) (place (+ ?place 1)) (length (+ 3 ?l))))
 )
