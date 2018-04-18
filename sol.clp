@@ -24,6 +24,122 @@
         (slot length)
 )
 
+; (defrule one-column-equal
+;         (declare (salience 10)) 
+;         (first ?fn 1)
+;         (second ?sn 1)
+;         (sum ?sumn 1)
+
+;         (result-length 1)
+;         (operand-length 1)
+
+;         (enum ?op1 ?d1)
+;         (enum ?op2 ?d2)
+;         (enum ?res ?d3)
+
+;         ?current_count <- (count ?count)
+
+;         (test (eq (+ ?d1 ?d2) ?d3))   
+
+;         (test (eq ?fn ?op1))
+;         (test (eq ?sn ?op2))
+;         (test (eq ?sumn ?res))
+
+;         (test (if (eq ?fn ?sn)
+;                 then
+;                 (eq ?d1 ?d2)
+;                 else
+;                 (neq ?d1 ?d2)))
+
+;         (test (if (eq ?fn ?sumn)
+;                 then
+;                 (eq ?d1 ?d3)
+;                 else
+;                 (neq ?d1 ?d3)))
+
+;         (test (if (eq ?sn ?sumn)
+;                 then
+;                 (eq ?d2 ?d3)
+;                 else
+;                 (neq ?d2 ?d3))) 
+
+;         =>     
+
+;         (retract ?current_count)
+;         (assert (count (+ ?count 1)))
+;         (assert (terminated (letterarray ?fn ?sn ?sumn) (numberarray ?d1 ?d2 ?d3) (length 3)))
+
+; )
+
+; (defrule one-column-inequal
+;         (declare (salience 10))        
+;         (first ?fn 1)
+;         (second ?sn 1)
+;         (sum ?sumn 1)
+;         (sum ?sumn_1 2)
+
+;         (result-length 2)
+;         (operand-length 1)
+
+;         (enum ?op1 ?d1)
+;         (enum ?op2 ?d2)
+;         (enum ?res ?d3)
+;         (enum ?res_new ?d4)
+
+;         ?current_count <- (count ?count)
+
+;         (test (eq (+ ?d1 ?d2) ?d3))   
+
+;         (test (eq ?fn ?op1))
+;         (test (eq ?sn ?op2))
+;         (test (eq ?sumn ?res))
+;         (test (eq ?sumn_1 ?res_new))
+
+;         (test (if (eq ?fn ?sn)
+;                 then
+;                 (eq ?d1 ?d2)
+;                 else
+;                 (neq ?d1 ?d2)))
+
+;         (test (if (eq ?fn ?sumn)
+;                 then
+;                 (eq ?d1 ?d3)
+;                 else
+;                 (neq ?d1 ?d3)))
+
+;         (test (if (eq ?fn ?sumn_1)
+;                 then
+;                 (eq ?d1 ?d4)
+;                 else
+;                 (neq ?d1 ?d4))) 
+
+;         (test (if (eq ?sn ?sumn)
+;                 then
+;                 (eq ?d2 ?d3)
+;                 else
+;                 (neq ?d2 ?d3)))
+
+;         (test (if (eq ?sn ?sumn_1)
+;                 then
+;                 (eq ?d2 ?d4)
+;                 else
+;                 (neq ?d2 ?d4))) 
+
+;         (test (if (eq ?sumn ?sumn_1)
+;                 then
+;                 (eq ?d3 ?d4)
+;                 else
+;                 (neq ?d3 ?d4))) 
+
+;         =>     
+
+;         (retract ?current_count)
+;         (assert (count (+ ?count 1)))
+;         (assert (terminated (letterarray ?fn ?sn ?sumn ?sumn_1) (numberarray ?d1 ?d2 ?d3 ?d4) (length 4)))
+
+; )
+
+
 (defrule first-column
         (declare (salience 10))
         
