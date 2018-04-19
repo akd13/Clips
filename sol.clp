@@ -183,91 +183,91 @@
 
 )
 
-; (defrule result-length-column-inequal-length
+(defrule result-length-column-inequal-length
         
-;         (declare (salience 35))
+        (declare (salience 35))
 
-;         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
     
-;         (operand-length ?p)
-;         (result-length ?length_res)
-;         (test (eq ?length_res (+ ?p 1)))
-;         (test (eq ?p (+ ?place 1)))
+        (operand-length ?p)
+        (result-length ?length_res)
+        (test (eq ?length_res (+ ?p 1)))
+        (test (eq ?p (+ ?place 1)))
 
-;         (first ?fn ?p)
-;         (second ?sn ?p)
-;         (sum ?sumn ?p)
-;         (sum ?sumn_1 ?length_res)
+        (first ?fn ?p)
+        (second ?sn ?p)
+        (sum ?sumn ?p)
+        (sum ?sumn_1 ?length_res)
 
-;         (test (eq ?length_res (+ ?p 1)))
+        (test (eq ?length_res (+ ?p 1)))
 
-;         (enum ?op1 ?d1)
-;         (enum ?op2 ?d2)
-;         (enum ?res ?d3)
-;         (enum ?res_new 1)
+        (enum ?op1 ?d1)
+        (enum ?op2 ?d2)
+        (enum ?res ?d3)
+        (enum ?res_new 1)
 
-;         (test (eq ?fn ?op1))
-;         (test (eq ?sn ?op2))
-;         (test (eq ?sumn ?res))
-;         (test (eq ?sumn_1 ?res_new))
+        (test (eq ?fn ?op1))
+        (test (eq ?sn ?op2))
+        (test (eq ?sumn ?res))
+        (test (eq ?sumn_1 ?res_new))
 
-;         (not (and (letterarray ?fn ?sn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d2 ?d3 1 $?na)))
+        (not (assigned ?d1 ?d2 ?d3 1 $?na))
 
-;         ?current_count <- (count ?count)
+        ?current_count <- (count ?count)
 
-;         (test (eq (+ ?d1 ?d2 ?c) (+ 10 ?d3))) 
+        (test (eq (+ ?d1 ?d2 ?c) (+ 10 ?d3))) 
 
-;         (test (if (eq ?fn ?sn)
-;                 then
-;                 (eq ?d1 ?d2)
-;                 else
-;                 (neq ?d1 ?d2)))
+        (test (if (eq ?fn ?sn)
+                then
+                (eq ?d1 ?d2)
+                else
+                (neq ?d1 ?d2)))
 
-;         (test (if (eq ?fn ?sumn)
-;                 then
-;                 (eq ?d1 ?d3)
-;                 else
-;                 (neq ?d1 ?d3)))
+        (test (if (eq ?fn ?sumn)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
 
-;         (test (if (eq ?fn ?sumn_1)
-;                 then
-;                 (eq ?d1 1)
-;                 else
-;                 (neq ?d1 1))) 
+        (test (if (eq ?fn ?sumn_1)
+                then
+                (eq ?d1 1)
+                else
+                (neq ?d1 1))) 
 
-;         (test (if (eq ?sn ?sumn)
-;                 then
-;                 (eq ?d2 ?d3)
-;                 else
-;                 (neq ?d2 ?d3)))
+        (test (if (eq ?sn ?sumn)
+                then
+                (eq ?d2 ?d3)
+                else
+                (neq ?d2 ?d3)))
 
-;         (test (if (eq ?sn ?sumn_1)
-;                 then
-;                 (eq ?d2 1)
-;                 else
-;                 (neq ?d2 1))) 
+        (test (if (eq ?sn ?sumn_1)
+                then
+                (eq ?d2 1)
+                else
+                (neq ?d2 1))) 
 
-;         (test (if (eq ?sumn ?sumn_1)
-;                 then
-;                 (eq ?d3 1)
-;                 else
-;                 (neq ?d3 1))) 
+        (test (if (eq ?sumn ?sumn_1)
+                then
+                (eq ?d3 1)
+                else
+                (neq ?d3 1))) 
 
-;         (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
-;         (test (eq (member$ ?sn ?la) (member$ ?d2 ?na)))
-;         (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
-;         (test (eq (member$ ?sumn_1 ?la) (member$ 1 ?na)))
+        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+        (test (eq (member$ ?sn ?la) (member$ ?d2 ?na)))
+        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
+        (test (eq (member$ ?sumn_1 ?la) (member$ 1 ?na)))
 
 
-;         =>     
+        =>     
 
-;         (retract ?current_count)
-;         (assert (count (+ ?count 1)))
-;         ;(retract ?previous_column)
-;         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover 0) (place (+ ?place 1)) (length (+ 4 ?l))))
-;         (assert (terminated (letterarray ?fn ?sn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d2 ?d3 1 $?na) (length (+ ?l 4))))
+        (retract ?current_count)
+        (assert (count (+ ?count 1)))
+        ;(retract ?previous_column)
+        (assert (assigned ?d1 ?d2 ?d3 1 $?na))
+        (assert (terminated (letterarray ?fn ?sn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d2 ?d3 1 $?na) (length (+ ?l 4))))
 
-; )
+)
 
 
 (defrule finish
