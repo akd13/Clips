@@ -63,7 +63,6 @@
 
         (bind ?c (div (+ ?d1 ?d2) 10))
         (assert (previous_column (letterarray ?f1 ?s1 ?sum1) (numberarray ?d1 ?d2 ?d3) (carryover ?c) (place 1) (length 3)))
-
 )
 
 (defrule middle-column
@@ -147,6 +146,8 @@
         (test (eq ?sumn ?res))
 
         (test (eq (+ ?d1 ?d2 ?c) ?d3))   
+        
+        (not (assigned ?d1 ?d2 ?d3 $?na))
 
         ?current_count <- (count ?count)
 
@@ -176,102 +177,107 @@
 
         (retract ?current_count)
         (assert (count (+ ?count 1)))
-        (retract ?previous_column)
+        ;(retract ?previous_column)
+        (assert (assigned ?d1 ?d2 ?d3 $?na))
         (assert (terminated (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (length (+ ?l 3))))
 
 )
 
-(defrule result-length-column-inequal-length
+; (defrule result-length-column-inequal-length
         
-        (declare (salience 30))
+;         (declare (salience 35))
 
-        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
+;         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
     
-        (operand-length ?p)
-        (result-length ?length_res)
-        (test (eq ?length_res (+ ?p 1)))
-        (test (eq ?p (+ ?place 1)))
+;         (operand-length ?p)
+;         (result-length ?length_res)
+;         (test (eq ?length_res (+ ?p 1)))
+;         (test (eq ?p (+ ?place 1)))
 
-        (first ?fn ?p)
-        (second ?sn ?p)
-        (sum ?sumn ?p)
-        (sum ?sumn_1 ?length_res)
+;         (first ?fn ?p)
+;         (second ?sn ?p)
+;         (sum ?sumn ?p)
+;         (sum ?sumn_1 ?length_res)
 
-        (test (eq ?length_res (+ ?p 1)))
+;         (test (eq ?length_res (+ ?p 1)))
 
-        (enum ?op1 ?d1)
-        (enum ?op2 ?d2)
-        (enum ?res ?d3)
-        (enum ?res_new 1)
+;         (enum ?op1 ?d1)
+;         (enum ?op2 ?d2)
+;         (enum ?res ?d3)
+;         (enum ?res_new 1)
 
-        (test (eq ?fn ?op1))
-        (test (eq ?sn ?op2))
-        (test (eq ?sumn ?res))
-        (test (eq ?sumn_1 ?res_new))
+;         (test (eq ?fn ?op1))
+;         (test (eq ?sn ?op2))
+;         (test (eq ?sumn ?res))
+;         (test (eq ?sumn_1 ?res_new))
 
-        ?current_count <- (count ?count)
+;         (not (and (letterarray ?fn ?sn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d2 ?d3 1 $?na)))
 
-        (test (eq (+ ?d1 ?d2 ?c) (+ 10 ?d3))) 
+;         ?current_count <- (count ?count)
 
-        (test (if (eq ?fn ?sn)
-                then
-                (eq ?d1 ?d2)
-                else
-                (neq ?d1 ?d2)))
+;         (test (eq (+ ?d1 ?d2 ?c) (+ 10 ?d3))) 
 
-        (test (if (eq ?fn ?sumn)
-                then
-                (eq ?d1 ?d3)
-                else
-                (neq ?d1 ?d3)))
+;         (test (if (eq ?fn ?sn)
+;                 then
+;                 (eq ?d1 ?d2)
+;                 else
+;                 (neq ?d1 ?d2)))
 
-        (test (if (eq ?fn ?sumn_1)
-                then
-                (eq ?d1 1)
-                else
-                (neq ?d1 1))) 
+;         (test (if (eq ?fn ?sumn)
+;                 then
+;                 (eq ?d1 ?d3)
+;                 else
+;                 (neq ?d1 ?d3)))
 
-        (test (if (eq ?sn ?sumn)
-                then
-                (eq ?d2 ?d3)
-                else
-                (neq ?d2 ?d3)))
+;         (test (if (eq ?fn ?sumn_1)
+;                 then
+;                 (eq ?d1 1)
+;                 else
+;                 (neq ?d1 1))) 
 
-        (test (if (eq ?sn ?sumn_1)
-                then
-                (eq ?d2 1)
-                else
-                (neq ?d2 1))) 
+;         (test (if (eq ?sn ?sumn)
+;                 then
+;                 (eq ?d2 ?d3)
+;                 else
+;                 (neq ?d2 ?d3)))
 
-        (test (if (eq ?sumn ?sumn_1)
-                then
-                (eq ?d3 1)
-                else
-                (neq ?d3 1))) 
+;         (test (if (eq ?sn ?sumn_1)
+;                 then
+;                 (eq ?d2 1)
+;                 else
+;                 (neq ?d2 1))) 
 
-        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
-        (test (eq (member$ ?sn ?la) (member$ ?d2 ?na)))
-        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
-        (test (eq (member$ ?sumn_1 ?la) (member$ 1 ?na)))
+;         (test (if (eq ?sumn ?sumn_1)
+;                 then
+;                 (eq ?d3 1)
+;                 else
+;                 (neq ?d3 1))) 
+
+;         (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+;         (test (eq (member$ ?sn ?la) (member$ ?d2 ?na)))
+;         (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
+;         (test (eq (member$ ?sumn_1 ?la) (member$ 1 ?na)))
 
 
-        =>     
+;         =>     
 
-        (retract ?current_count)
-        (assert (count (+ ?count 1)))
-        (retract ?previous_column)
-        (assert (terminated (letterarray ?fn ?sn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d2 ?d3 1 $?na) (length (+ ?l 4))))
+;         (retract ?current_count)
+;         (assert (count (+ ?count 1)))
+;         ;(retract ?previous_column)
+;         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover 0) (place (+ ?place 1)) (length (+ 4 ?l))))
+;         (assert (terminated (letterarray ?fn ?sn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d2 ?d3 1 $?na) (length (+ ?l 4))))
 
-)
+; )
 
 
 (defrule finish
         (declare (salience 70))
+
         ?terminated <- (terminated (letterarray $?la) (numberarray $?na) (length ?l))
+        ; ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover 0) (place ?place) (length ?l) )
         (count ?count)
         (not (done ?count))  
         =>
-        
         (printout t " One answer is " crlf)
         (loop-for-count (?cnt 1 ?l) do
                 (printout t " Letter " (nth$ ?cnt ?la) " is " (nth$ ?cnt ?na) crlf)
@@ -279,7 +285,6 @@
         (printout t " Solution(s): " ?count crlf)
         (printout t crlf)
         (assert (done ?count))
-
 )
 
 (defrule retract-redundant
