@@ -1,33 +1,196 @@
-(deffacts init
-        (digit 0 1 2 3 4 5 6 7 8 9)
+(deffacts init                          ; initialize digits for letters
+        (digit 0 1 2 3 4 5 6 7 8 9) 
 )
         
-(defrule enumerate-all-letters
-        (declare (salience 90))
+(defrule enumerate-all-letters          ; enumerate all letters first
+        (declare (salience 90)) 
         (letters $? ?a $?)
         (digit $? ?d $?)
         =>
         (assert (enum ?a ?d))
 )
 
-(deftemplate previous_column
-        (multislot letterarray)
-        (multislot numberarray)
-        (slot carryover)
-        (slot place)
-        (slot length)
+(defrule retract-redundant-res-inequal
+        (declare (salience 100))
+        (operand-length ?oplength)
+        (result-length ?reslength)
+        (test (eq ?reslength (+ 1 ?oplength)))
+        (sum ?reschar ?reslength)
+        ?fact <- (enum ?reschar ?d)
+        (test (neq ?d 1))
+        =>
+        (retract ?fact)
+
+)
+
+(defrule retract-redundant-res-equal
+        (declare (salience 100))
+        (operand-length ?oplength)
+        (result-length ?reslength)
+        (test (eq ?reslength ?oplength))
+        (sum ?reschar ?reslength)
+        ?fact <- (enum ?reschar 0)
+        =>
+        (retract ?fact)
+)
+
+
+(defrule retract-redundant-op1
+        (declare (salience 100))
+        (operand-length ?oplength)
+        (first ?op1char ?oplength)
+        (second ?op2char ?oplength)
+        ?fact1 <- (enum ?op1char 0)
+        ?fact2 <- (enum ?op2char 0)
+        =>
+        (retract ?fact1)
+        (retract ?fact2)
+
+)
+
+(deftemplate previous_column            ; for a column being processed, this carries information of the previous column's
+        (multislot letterarray)         ; letter assignments (letterarray) 
+        (multislot numberarray)         ; number assignments (numberarray)
+        (slot carryover)                ; carryover from previous column
+        (slot place)                    ; previous mth column processed
+        (slot length)                   ; number of assignments made so far (length of arrays)
 )
 
 (deftemplate terminated
-        (multislot letterarray)
-        (multislot numberarray)
-        (slot length)
+        (multislot letterarray)         ; letters assigned
+        (multislot numberarray)         ; numbers assigned
+        (slot length)                   ; number of assignments (length of arrays)
 )
 
-(defrule first-column
+;SPECIAL CASES
+
+(defrule only-one-column-equal
+
+        (operand-length 1)
+        (result-length 1)
+        
+        (first ?f1 1)                   
+        (second ?s1 1)
+        (sum ?sum1 1)
+
+        (enum ?op1 ?d1)
+        (enum ?op2 ?d2)
+        (enum ?res ?d3)
+
+        (not (assigned ?d1 ?d2 ?d3))
+
+        (test (eq ?f1 ?op1))
+        (test (eq ?s1 ?op2))
+        (test (eq ?sum1 ?res))
+        
+        (test (eq (+ ?d1 ?d2) ?d3))
+
+        (test (if (eq ?f1 ?s1)
+                then
+                (eq ?d1 ?d2)
+                else
+                (neq ?d1 ?d2)))
+        
+        (test (if (eq ?f1 ?sum1)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+        
+        (test (if (eq ?s1 ?sum1)
+                then
+                (eq ?d2 ?d3)
+                else
+                (neq ?d2 ?d3)))
+
+        ?current_count  <- (count ?count)
+
+        =>
+
+        (retract ?current_count )
+        (assert (count (+ ?count 1)))
+        (assert (assigned ?d1 ?d2 ?d3))
+        (assert (terminated (letterarray ?f1 ?s1 ?sum1) (numberarray ?d1 ?d2 ?d3) (length 3)))
+
+)
+
+(defrule only-one-column-inequal
+
+        (operand-length 1)
+        (result-length 2)
+        
+        (first ?f1 1)                   
+        (second ?s1 1)
+        (sum ?sum1 1)
+        (sum ?sumn 2)
+
+        (enum ?op1 ?d1)
+        (enum ?op2 ?d2)
+        (enum ?res ?d3)
+        (enum ?resn 1)
+
+        (not (assigned ?d1 ?d2 1 ?d3))
+
+        (test (eq ?f1 ?op1))
+        (test (eq ?s1 ?op2))
+        (test (eq ?sum1 ?res))
+        (test (eq ?sumn ?resn))
+        
+        (test (eq (+ ?d1 ?d2) (+ 10 ?d3)))
+
+        (test (if (eq ?f1 ?s1)
+                then
+                (eq ?d1 ?d2)
+                else
+                (neq ?d1 ?d2)))
+        
+        (test (if (eq ?f1 ?sum1)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+
+        (test (if (eq ?f1 ?sumn)
+                then
+                (eq ?d1 1)
+                else
+                (neq ?d1 1)))
+        
+        (test (if (eq ?s1 ?sum1)
+                then
+                (eq ?d2 ?d3)
+                else
+                (neq ?d2 ?d3)))
+
+        (test (if (eq ?s1 ?sumn)
+                then
+                (eq ?d2 1)
+                else
+                (neq ?d2 1)))
+
+        (test (if (eq ?sum1 ?sumn)
+                then
+                (eq ?d3 1)
+                else
+                (neq ?d3 1)))
+
+        ?current_count  <- (count ?count)
+
+        =>
+
+        (retract ?current_count )
+        (assert (count (+ ?count 1)))
+        (assert (assigned ?d1 ?d2 1 ?d3))
+        (assert (terminated (letterarray ?f1 ?s1 ?sumn ?sum1) (numberarray ?d1 ?d2 1 ?d3) (length 4)))
+
+)
+
+; MAIN PROCESSING
+
+(defrule first-column                   ; first column of 
         (declare (salience 10))
         
-        (first ?f1 1)
+        (first ?f1 1)                   
         (second ?s1 1)
         (sum ?sum1 1)
         
@@ -76,8 +239,6 @@
 
         (test (eq ?p (+ ?place 1)))
 
-        ; (test (neq ?p 1))      
-
         (result-length ?result-length)
         (test (neq ?result-length ?p))    
         
@@ -115,7 +276,6 @@
        
         =>     
        
-        ;(retract ?previous_column)
         (bind ?c_new (div (+ ?d1 ?d2 ?c) 10))
         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 3 ?l))))
 )
@@ -177,7 +337,6 @@
 
         (retract ?current_count)
         (assert (count (+ ?count 1)))
-        ;(retract ?previous_column)
         (assert (assigned ?d1 ?d2 ?d3 $?na))
         (assert (terminated (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (length (+ ?l 3))))
 
@@ -263,7 +422,6 @@
 
         (retract ?current_count)
         (assert (count (+ ?count 1)))
-        ;(retract ?previous_column)
         (assert (assigned ?d1 ?d2 ?d3 1 $?na))
         (assert (terminated (letterarray ?fn ?sn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d2 ?d3 1 $?na) (length (+ ?l 4))))
 
@@ -274,7 +432,6 @@
         (declare (salience 70))
 
         ?terminated <- (terminated (letterarray $?la) (numberarray $?na) (length ?l))
-        ; ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover 0) (place ?place) (length ?l) )
         (count ?count)
         (not (done ?count))  
         =>
@@ -285,44 +442,6 @@
         (printout t " Solution(s): " ?count crlf)
         (printout t crlf)
         (assert (done ?count))
-)
-
-(defrule retract-redundant-res-inequal
-        (declare (salience 100))
-        (operand-length ?oplength)
-        (result-length ?reslength)
-        (test (eq ?reslength (+ 1 ?oplength)))
-        (sum ?reschar ?reslength)
-        ?fact <- (enum ?reschar ?d)
-        (test (neq ?d 1))
-        =>
-        (retract ?fact)
-
-)
-
-(defrule retract-redundant-res-equal
-        (declare (salience 100))
-        (operand-length ?oplength)
-        (result-length ?reslength)
-        (test (eq ?reslength ?oplength))
-        (sum ?reschar ?reslength)
-        ?fact <- (enum ?reschar 0)
-        =>
-        (retract ?fact)
-)
-
-
-(defrule retract-redundant-op1
-        (declare (salience 140))
-        (operand-length ?oplength)
-        (first ?op1char ?oplength)
-        (second ?op2char ?oplength)
-        ?fact1 <- (enum ?op1char 0)
-        ?fact2 <- (enum ?op2char 0)
-        =>
-        (retract ?fact1)
-        (retract ?fact2)
-
 )
 
 (defrule no-solution
@@ -358,8 +477,13 @@
         (loop-for-count (?cnt 1 ?oplength) do
                 (bind ?d (+ (- ?oplength ?cnt) 1))
                 (bind ?op1char (nth$ ?d ?op1array))
-                (bind ?op2char (nth$ ?d ?op2array))
                 (assert (first ?op1char ?cnt))
+
+        )
+
+        (loop-for-count (?cnt 1 ?oplength) do
+                (bind ?d (+ (- ?oplength ?cnt) 1))
+                (bind ?op2char (nth$ ?d ?op2array))
                 (assert (second ?op2char ?cnt))
 
         )
