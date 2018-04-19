@@ -116,8 +116,8 @@
         =>     
        
         ;(retract ?previous_column)
-        (bind ?c (div (+ ?d1 ?d2) 10))
-        (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c) (place (+ ?place 1)) (length (+ 3 ?l))))
+        (bind ?c_new (div (+ ?d1 ?d2 ?c) 10))
+        (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 3 ?l))))
 )
 
 (defrule result-length-column-equal-length
@@ -185,7 +185,7 @@
 
 (defrule result-length-column-inequal-length
         
-        (declare (salience 35))
+        (declare (salience 30))
 
         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
     
@@ -325,6 +325,11 @@
 
 )
 
+(defrule no-solution
+        (count 0)
+        =>
+        (printout t " No solution!" crlf)
+)
 
 (defrule input
         (declare (salience 5))
