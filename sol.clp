@@ -12,7 +12,8 @@
 
 (defrule retract-redundant-res-inequal  ; retract all numbers except 1 from the residual result letter (e.g OH+NO=LOL will have L=1)
         (declare (salience 100))
-        (operand-length ?oplength)
+        (operand1-length ?oplength)
+        (operand2-length ?oplength)     
         (result-length ?reslength)
         (test (eq ?reslength (+ 1 ?oplength)))
         (sum ?reschar ?reslength)
@@ -25,10 +26,10 @@
 
 (defrule retract-redundant-result-equal    ; retract leading 0s from result operand
         (declare (salience 100))
-        (operand-length ?oplength)
-        (result-length ?reslength)
-        (test (eq ?reslength ?oplength))
-        (sum ?reschar ?reslength)
+        (operand1-length ?oplength)
+        (operand2-length ?oplength)        
+        (result-length ?oplength)
+        (sum ?reschar ?oplength)
         ?fact <- (enum ?reschar 0)
         =>
         (retract ?fact)
@@ -37,7 +38,8 @@
 
 (defrule retract-redundant-operand          ; retract leading 0s from first and second operands
         (declare (salience 100))
-        (operand-length ?oplength)
+        (operand1-length ?oplength)
+        (operand2-length ?oplength) 
         (first ?op1char ?oplength)
         (second ?op2char ?oplength)
         ?fact1 <- (enum ?op1char 0)
@@ -50,7 +52,8 @@
 
 (defrule retract-redundant-operand-result          ; retract numbers>5 from first and second operands
         (declare (salience 100))
-        (operand-length ?oplength)
+        (operand1-length ?oplength)
+        (operand2-length ?oplength) 
         (result-length ?reslength)
         (test (eq ?reslength (+ 1 ?oplength)))
         (first ?opchar ?oplength)
@@ -79,7 +82,8 @@
 
 (defrule only-one-column-equal        ; handle single columns (e.g A+B=C)
 
-        (operand-length 1)
+        (operand1-length 1)
+        (operand2-length 1) 
         (result-length 1)
         
         (first ?f1 1)                   
@@ -125,7 +129,8 @@
 
 (defrule only-one-column-inequal        ; handle single operands with two digit results (e.g A+B=CD)
 
-        (operand-length 1)
+        (operand1-length 1)
+        (operand2-length 1) 
         (result-length 2)
         
         (first ?f1 1)                   
@@ -275,13 +280,16 @@
         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 3 ?l))))
 )
 
+
 (defrule result-length-column-equal-length      ; final column if operands and results are equal lengths
         
         (declare (salience 30))
 
         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
 
-        (operand-length ?length-operand)
+        (operand1-length ?length-operand)
+        (operand2-length ?length-operand)
+
         (result-length ?length_res&?length-operand)
         (test (eq ?length-operand (+ ?place 1)))
 
@@ -336,7 +344,8 @@
 
         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
     
-        (operand-length ?p)
+        (operand1-length ?p)
+        (operand2-length ?p)
         (result-length ?length_res)
         (test (eq ?length_res (+ ?p 1)))
         (test (eq ?p (+ ?place 1)))
@@ -450,22 +459,24 @@
         (bind ?all_letters ?op1array ?op2array ?resarray)
         (assert (letters ?all_letters))
 
-        (bind ?oplength (length$ (create$ ?op1array)))
+        (bind ?op1length (length$ (create$ ?op1array)))
+        (bind ?op2length (length$ (create$ ?op2array)))
         (bind ?reslength (length$ (create$ ?resarray)))
-        (printout t "Length of operands is " ?oplength  " & result is " ?reslength crlf)
+        (printout t "Length of operands is " ?op1length " & " ?op2length  " & result is " ?reslength crlf)
         
-        (assert (operand-length ?oplength))
+        (assert (operand1-length ?op1length))
+        (assert (operand2-length ?op2length))
         (assert (result-length ?reslength))
         
-        (loop-for-count (?cnt 1 ?oplength) do
-                (bind ?d (+ (- ?oplength ?cnt) 1))
+        (loop-for-count (?cnt 1 ?op1length) do
+                (bind ?d (+ (- ?op1length ?cnt) 1))
                 (bind ?op1char (nth$ ?d ?op1array))
                 (assert (first ?op1char ?cnt))
 
         )
 
-        (loop-for-count (?cnt 1 ?oplength) do
-                (bind ?d (+ (- ?oplength ?cnt) 1))
+        (loop-for-count (?cnt 1 ?op2length) do
+                (bind ?d (+ (- ?op2length ?cnt) 1))
                 (bind ?op2char (nth$ ?d ?op2array))
                 (assert (second ?op2char ?cnt))
 
