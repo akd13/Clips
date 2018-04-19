@@ -287,7 +287,7 @@
         (assert (done ?count))
 )
 
-(defrule retract-redundant
+(defrule retract-redundant-res-inequal
         (declare (salience 100))
         (operand-length ?oplength)
         (result-length ?reslength)
@@ -299,6 +299,32 @@
         (retract ?fact)
 
 )
+
+(defrule retract-redundant-res-equal
+        (declare (salience 100))
+        (operand-length ?oplength)
+        (result-length ?reslength)
+        (test (eq ?reslength ?oplength))
+        (sum ?reschar ?reslength)
+        ?fact <- (enum ?reschar 0)
+        =>
+        (retract ?fact)
+)
+
+
+(defrule retract-redundant-op1
+        (declare (salience 140))
+        (operand-length ?oplength)
+        (first ?op1char ?oplength)
+        (second ?op2char ?oplength)
+        ?fact1 <- (enum ?op1char 0)
+        ?fact2 <- (enum ?op2char 0)
+        =>
+        (retract ?fact1)
+        (retract ?fact2)
+
+)
+
 
 (defrule input
         (declare (salience 5))
@@ -338,7 +364,6 @@
                 (bind ?reschar (nth$ ?d ?resarray))
                 (assert (sum ?reschar ?cnt))
         )
-
 
         (assert (count 0))
 )
