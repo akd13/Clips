@@ -48,18 +48,16 @@
 
 )
 
-(defrule retract-redundant-operand-result          ; retract leading 0s from first and second operands
+(defrule retract-redundant-operand-result          ; retract numbers>5 from first and second operands
         (declare (salience 100))
         (operand-length ?oplength)
         (result-length ?reslength)
         (test (eq ?reslength (+ 1 ?oplength)))
         (first ?opchar ?oplength)
         (second ?opchar ?oplength)
-        ?fact1 <- (enum ?op1char&:(> ?op1char 4))
-        ?fact2 <- (enum ?op2char&:(> ?op2char 4))
+        ?fact <- (enum ?opchar ?d&:(> 5 ?d))
         =>
-        (retract ?fact1)
-        (retract ?fact2)
+        (retract ?fact)
 
 )
 
