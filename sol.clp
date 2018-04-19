@@ -73,15 +73,15 @@
         (second ?s1 1)
         (sum ?sum1 1)
 
-        (enum ?op1 ?d1)
-        (enum ?op2 ?d2)
-        (enum ?res ?d3)
+        (enum ?op1&?f1 ?d1)
+        (enum ?op2&?s1 ?d2)
+        (enum ?res&?sum1 ?d3)
 
         (not (assigned ?d1 ?d2 ?d3))
 
-        (test (eq ?f1 ?op1))
-        (test (eq ?s1 ?op2))
-        (test (eq ?sum1 ?res))
+        ; (test (eq ?f1 ?op1))
+        ; (test (eq ?s1 ?op2))
+        ; (test (eq ?sum1 ?res))
         
         (test (eq (+ ?d1 ?d2) ?d3))
 
@@ -124,17 +124,17 @@
         (sum ?sum1 1)
         (sum ?sumn 2)
 
-        (enum ?op1 ?d1)
-        (enum ?op2 ?d2)
-        (enum ?res ?d3)
-        (enum ?resn 1)
+        (enum ?op1&?f1 ?d1)
+        (enum ?op2&?s1 ?d2)
+        (enum ?res&?sum1 ?d3)
+        (enum ?resn&?sumn 1)
 
         (not (assigned ?d1 ?d2 1 ?d3))
 
-        (test (eq ?f1 ?op1))
-        (test (eq ?s1 ?op2))
-        (test (eq ?sum1 ?res))
-        (test (eq ?sumn ?resn))
+        ; (test (eq ?f1 ?op1))
+        ; (test (eq ?s1 ?op2))
+        ; (test (eq ?sum1 ?res))
+        ; (test (eq ?sumn ?resn))
         
         (test (eq (+ ?d1 ?d2) (+ 10 ?d3)))
 
@@ -194,13 +194,13 @@
         (second ?s1 1)
         (sum ?sum1 1)
         
-        (enum ?op1 ?d1)
-        (enum ?op2 ?d2)
-        (enum ?res ?d3)
+        (enum ?op1&?f1 ?d1)
+        (enum ?op2&?s1 ?d2)
+        (enum ?res&?sum1 ?d3)
 
-        (test (eq ?f1 ?op1))
-        (test (eq ?s1 ?op2))
-        (test (eq ?sum1 ?res))
+        ; (test (eq ?f1 ?op1))
+        ; (test (eq ?s1 ?op2))
+        ; (test (eq ?sum1 ?res))
         
         (test (eq (mod (+ ?d1 ?d2) 10) ?d3))
 
@@ -239,16 +239,16 @@
 
         (test (eq ?p (+ ?place 1)))
 
-        (result-length ?result-length)
-        (test (neq ?result-length ?p))    
+        (result-length ?result-length&~?p)
+        ; (test (neq ?result-length ?p))    
         
-        (enum ?op1 ?d1)
-        (enum ?op2 ?d2)
-        (enum ?res ?d3)
+        (enum ?op1&?fn ?d1)
+        (enum ?op2&?sn ?d2)
+        (enum ?res&?sumn ?d3)
 
-        (test (eq ?fn ?op1))
-        (test (eq ?sn ?op2))
-        (test (eq ?sumn ?res))
+        ; (test (eq ?fn ?op1))
+        ; (test (eq ?sn ?op2))
+        ; (test (eq ?sumn ?res))
 
         (test (eq (mod (+ ?d1 ?d2 ?c) 10) ?d3))   
 
@@ -287,23 +287,23 @@
         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
 
         (operand-length ?length-operand)
-        (result-length ?length_res)
+        (result-length ?length_res&?length-operand)
         (test (eq ?length-operand (+ ?place 1)))
-        (test (eq ?length_res ?length-operand))
+        ; (test (eq ?length_res ?length-operand))
 
-        (first ?fn ?p)
-        (second ?sn ?p)
-        (sum ?sumn ?p)
+        (first ?fn ?p&?length_res)
+        (second ?sn ?p&?length_res)
+        (sum ?sumn ?p&?length_res)
 
-        (test (eq ?length_res ?p))
+        ; (test (eq ?length_res ?p))
 
-        (enum ?op1 ?d1)
-        (enum ?op2 ?d2)
-        (enum ?res ?d3)
+        (enum ?op1&?fn ?d1)
+        (enum ?op2&?sn ?d2)
+        (enum ?res&?sumn ?d3)
 
-        (test (eq ?fn ?op1))
-        (test (eq ?sn ?op2))
-        (test (eq ?sumn ?res))
+        ; (test (eq ?fn ?op1))
+        ; (test (eq ?sn ?op2))
+        ; (test (eq ?sumn ?res))
 
         (test (eq (+ ?d1 ?d2 ?c) ?d3))   
         
@@ -360,15 +360,15 @@
 
         (test (eq ?length_res (+ ?p 1)))
 
-        (enum ?op1 ?d1)
-        (enum ?op2 ?d2)
-        (enum ?res ?d3)
-        (enum ?res_new 1)
+        (enum ?op1&?fn ?d1)
+        (enum ?op2&?sn ?d2)
+        (enum ?res&?sumn ?d3)
+        (enum ?res_new&?sumn_1 1)
 
-        (test (eq ?fn ?op1))
-        (test (eq ?sn ?op2))
-        (test (eq ?sumn ?res))
-        (test (eq ?sumn_1 ?res_new))
+        ; (test (eq ?fn ?op1))
+        ; (test (eq ?sn ?op2))
+        ; (test (eq ?sumn ?res))
+        ; (test (eq ?sumn_1 ?res_new))
 
         (not (assigned ?d1 ?d2 ?d3 1 $?na))
 
