@@ -10,7 +10,7 @@
         (assert (enum ?a ?d))
 )
 
-(defrule retract-redundant-res-inequal
+(defrule retract-redundant-res-inequal  ; retract all numbers except 1 from the residual result letter (e.g OH+NO=LOL will have L=1)
         (declare (salience 100))
         (operand-length ?oplength)
         (result-length ?reslength)
@@ -23,7 +23,7 @@
 
 )
 
-(defrule retract-redundant-res-equal
+(defrule retract-redundant-result-equal    ; retract leading 0s from result operand
         (declare (salience 100))
         (operand-length ?oplength)
         (result-length ?reslength)
@@ -35,13 +35,28 @@
 )
 
 
-(defrule retract-redundant-op1
+(defrule retract-redundant-operand          ; retract leading 0s from first and second operands
         (declare (salience 100))
         (operand-length ?oplength)
         (first ?op1char ?oplength)
         (second ?op2char ?oplength)
         ?fact1 <- (enum ?op1char 0)
         ?fact2 <- (enum ?op2char 0)
+        =>
+        (retract ?fact1)
+        (retract ?fact2)
+
+)
+
+(defrule retract-redundant-operand-result          ; retract leading 0s from first and second operands
+        (declare (salience 100))
+        (operand-length ?oplength)
+        (result-length ?reslength)
+        (test (eq ?reslength (+ 1 ?oplength)))
+        (first ?opchar ?oplength)
+        (second ?opchar ?oplength)
+        ?fact1 <- (enum ?op1char&:(> ?op1char 4))
+        ?fact2 <- (enum ?op2char&:(> ?op2char 4))
         =>
         (retract ?fact1)
         (retract ?fact2)
@@ -64,7 +79,7 @@
 
 ;SPECIAL CASES
 
-(defrule only-one-column-equal
+(defrule only-one-column-equal        ; handle single columns (e.g A+B=C)
 
         (operand-length 1)
         (result-length 1)
@@ -78,10 +93,6 @@
         (enum ?res&?sum1 ?d3)
 
         (not (assigned ?d1 ?d2 ?d3))
-
-        ; (test (eq ?f1 ?op1))
-        ; (test (eq ?s1 ?op2))
-        ; (test (eq ?sum1 ?res))
         
         (test (eq (+ ?d1 ?d2) ?d3))
 
@@ -114,7 +125,7 @@
 
 )
 
-(defrule only-one-column-inequal
+(defrule only-one-column-inequal        ; handle single operands with two digit results (e.g A+B=CD)
 
         (operand-length 1)
         (result-length 2)
@@ -130,11 +141,6 @@
         (enum ?resn&?sumn 1)
 
         (not (assigned ?d1 ?d2 1 ?d3))
-
-        ; (test (eq ?f1 ?op1))
-        ; (test (eq ?s1 ?op2))
-        ; (test (eq ?sum1 ?res))
-        ; (test (eq ?sumn ?resn))
         
         (test (eq (+ ?d1 ?d2) (+ 10 ?d3)))
 
@@ -187,7 +193,7 @@
 
 ; MAIN PROCESSING
 
-(defrule first-column                   ; first column of 
+(defrule first-column                   ; first column of cryptarithmetic problem
         (declare (salience 10))
         
         (first ?f1 1)                   
@@ -197,10 +203,6 @@
         (enum ?op1&?f1 ?d1)
         (enum ?op2&?s1 ?d2)
         (enum ?res&?sum1 ?d3)
-
-        ; (test (eq ?f1 ?op1))
-        ; (test (eq ?s1 ?op2))
-        ; (test (eq ?sum1 ?res))
         
         (test (eq (mod (+ ?d1 ?d2) 10) ?d3))
 
@@ -228,7 +230,7 @@
         (assert (previous_column (letterarray ?f1 ?s1 ?sum1) (numberarray ?d1 ?d2 ?d3) (carryover ?c) (place 1) (length 3)))
 )
 
-(defrule middle-column
+(defrule middle-column                 ; middle column of cryptarithmetic problem
         (declare (salience 20))
         
         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
@@ -240,15 +242,10 @@
         (test (eq ?p (+ ?place 1)))
 
         (result-length ?result-length&~?p)
-        ; (test (neq ?result-length ?p))    
         
         (enum ?op1&?fn ?d1)
         (enum ?op2&?sn ?d2)
         (enum ?res&?sumn ?d3)
-
-        ; (test (eq ?fn ?op1))
-        ; (test (eq ?sn ?op2))
-        ; (test (eq ?sumn ?res))
 
         (test (eq (mod (+ ?d1 ?d2 ?c) 10) ?d3))   
 
@@ -280,7 +277,7 @@
         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 3 ?l))))
 )
 
-(defrule result-length-column-equal-length
+(defrule result-length-column-equal-length      ; final column if operands and results are equal lengths
         
         (declare (salience 30))
 
@@ -289,21 +286,14 @@
         (operand-length ?length-operand)
         (result-length ?length_res&?length-operand)
         (test (eq ?length-operand (+ ?place 1)))
-        ; (test (eq ?length_res ?length-operand))
 
         (first ?fn ?p&?length_res)
         (second ?sn ?p&?length_res)
         (sum ?sumn ?p&?length_res)
 
-        ; (test (eq ?length_res ?p))
-
         (enum ?op1&?fn ?d1)
         (enum ?op2&?sn ?d2)
         (enum ?res&?sumn ?d3)
-
-        ; (test (eq ?fn ?op1))
-        ; (test (eq ?sn ?op2))
-        ; (test (eq ?sumn ?res))
 
         (test (eq (+ ?d1 ?d2 ?c) ?d3))   
         
@@ -342,7 +332,7 @@
 
 )
 
-(defrule result-length-column-inequal-length
+(defrule result-length-column-inequal-length    ; final column if operands and results are unequal lengths
         
         (declare (salience 30))
 
@@ -364,11 +354,6 @@
         (enum ?op2&?sn ?d2)
         (enum ?res&?sumn ?d3)
         (enum ?res_new&?sumn_1 1)
-
-        ; (test (eq ?fn ?op1))
-        ; (test (eq ?sn ?op2))
-        ; (test (eq ?sumn ?res))
-        ; (test (eq ?sumn_1 ?res_new))
 
         (not (assigned ?d1 ?d2 ?d3 1 $?na))
 
