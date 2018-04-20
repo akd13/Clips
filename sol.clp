@@ -310,6 +310,42 @@
         (assert (previous_column (letterarray ?fn ?sumn $?la) (numberarray ?d1 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 2 ?l))))
 )
 
+(defrule middle-column-second-sum                ; middle column of cryptarithmetic problem
+        (declare (salience 20))
+        
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
+        
+        (not (first ?sn ?p&~1))
+        (second ?fn ?p&~1)
+        (sum ?sumn ?p&~1)
+
+        (test (eq ?p (+ ?place 1)))
+
+        (result-length ?result-length&~?p)
+        (operand2-length ?length-operand2)
+        (operand1-length ?length-operand1&~?length-operand2)
+        
+        (enum ?op1&?fn ?d1)
+        (enum ?res&?sumn ?d3)
+
+        (test (eq (mod (+ ?d1 ?c) 10) ?d3))   
+
+        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))    
+     
+
+        (test (if (eq ?fn ?sumn)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+
+        =>     
+       
+        (bind ?c_new (div (+ ?d1 ?c) 10))
+        (assert (previous_column (letterarray ?fn ?sumn $?la) (numberarray ?d1 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 2 ?l))))
+)
+
 (defrule result-length-column-equal-length-first-last     ; final column if first operand and result are equal lengths
         
         (declare (salience 30))
@@ -369,6 +405,113 @@
 
         (first ?fn ?p)
         (not (second ?sn ?p))
+        (sum ?sumn ?p)
+        (sum ?sumn_1 ?length_res)
+
+        (test (eq ?length_res (+ ?p 1)))
+
+        (enum ?op1&?fn ?d1)
+        (enum ?res&?sumn ?d3)
+        (enum ?res_new&?sumn_1 1)
+
+        (not (assigned ?d1 ?d3 1 $?na))
+
+        ?current_count <- (count ?count)
+
+        (test (eq (+ ?d1 ?c) (+ 10 ?d3))) 
+
+        (test (if (eq ?fn ?sumn)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+
+        (test (if (eq ?fn ?sumn_1)
+                then
+                (eq ?d1 1)
+                else
+                (neq ?d1 1))) 
+
+        (test (if (eq ?sumn ?sumn_1)
+                then
+                (eq ?d3 1)
+                else
+                (neq ?d3 1))) 
+
+        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
+        (test (eq (member$ ?sumn_1 ?la) (member$ 1 ?na)))
+
+
+        =>     
+
+        (retract ?current_count)
+        (assert (count (+ ?count 1)))
+        (assert (assigned ?d1 ?d3 1 $?na))
+        (assert (terminated (letterarray ?fn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d3 1 $?na) (length (+ ?l 3))))
+
+)
+
+
+(defrule result-length-column-equal-length-second-last     ; final column if first operand and result are equal lengths
+        
+        (declare (salience 30))
+
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
+
+        (operand2-length ?length2-operand)
+        (operand1-length ?length1-operand)
+
+        (result-length ?length_res&?length2-operand&~?length1-operand)
+        (test (eq ?length2-operand (+ ?place 1)))
+
+        (not (first ?sn ?p&?length_res))
+        (second ?fn ?p&?length_res)
+        (sum ?sumn ?p&?length_res)
+
+        (enum ?op1&?fn ?d1)
+        (enum ?res&?sumn ?d3)
+
+        (test (eq (+ ?d1 ?c) ?d3))   
+        
+        (not (assigned ?d1 ?d3 $?na))
+
+        ?current_count <- (count ?count)
+
+
+        (test (if (eq ?fn ?sumn)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+
+
+        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
+
+        =>     
+
+        (retract ?current_count)
+        (assert (count (+ ?count 1)))
+        (assert (assigned ?d1 ?d3 $?na))
+        (assert (terminated (letterarray ?fn ?sumn $?la) (numberarray ?d1 ?d3 $?na) (length (+ ?l 2))))
+
+)
+
+(defrule result-length-column-inequal-length-second-last   ; final column if operands and results are unequal lengths
+        
+        (declare (salience 30))
+
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
+    
+        (operand2-length ?p)
+        (operand1-length ?p_new&~?p)
+        (result-length ?length_res)
+        (test (eq ?length_res (+ ?p 1)))
+        (test (eq ?p (+ ?place 1)))
+
+        (not (first ?sn ?p))
+        (second ?fn ?p)
         (sum ?sumn ?p)
         (sum ?sumn_1 ?length_res)
 
