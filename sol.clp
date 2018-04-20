@@ -3,7 +3,7 @@
 )
         
 (defrule enumerate-all-letters          ; enumerate all letters first
-        (declare (salience 90)) 
+        (declare (salience 10))
         (letters $? ?a $?)
         (digit $? ?d $?)
         =>
@@ -17,30 +17,36 @@
         (result-length ?reslength)
         (test (eq ?reslength (+ 1 ?oplength)))
         (sum ?reschar ?reslength)
-        ?fact <- (enum ?reschar ?d)
-        (test (neq ?d 1))
+        ?fact <- (enum ?reschar ?d&~1)
         =>
         (retract ?fact)
 
 )
 
-(defrule retract-redundant-operand          ; retract leading 0s first, second and result operands
+(defrule retract-redundant-operand          ; retract leading 0s first and second
         (declare (salience 100))
         (operand1-length ?op1length)
         (operand2-length ?op2length)
-        (result-length ?reslength) 
         (first ?op1char ?op1length)
         (second ?op2char ?op2length)
-        (sum ?reschar ?reslength)
         ?fact1 <- (enum ?op1char 0)
         ?fact2 <- (enum ?op2char 0)
-        ?fact3 <- (enum ?reschar 0)
         =>
         (retract ?fact1)
         (retract ?fact2)
-        (retract ?fact3)
 
 )
+
+(defrule retract-redundant-result         ; retract leading 0s for result
+        (declare (salience 100))
+        (result-length ?reslength) 
+        (sum ?reschar ?reslength)
+        ?fact <- (enum ?reschar 0)
+        =>
+        (retract ?fact)
+
+)
+
 
 
 
@@ -53,8 +59,10 @@
         (first ?opchar ?oplength)
         (second ?opchar ?oplength)
         ?fact <- (enum ?opchar ?d&:(> 5 ?d))
+        ?letter <- (letter ?opchar)
         =>
         (retract ?fact)
+        (retract ?opchar)
 
 )
 
@@ -75,7 +83,7 @@
 ;SPECIAL CASES
 
 (defrule only-one-column-equal        ; handle single columns (e.g A+B=C)
-
+        (declare (salience 10))
         (operand1-length 1)
         (operand2-length 1) 
         (result-length 1)
@@ -122,7 +130,7 @@
 )
 
 (defrule only-one-column-inequal        ; handle single operands with two digit results (e.g A+B=CD)
-
+        (declare (salience 10))
         (operand1-length 1)
         (operand2-length 1) 
         (result-length 2)
