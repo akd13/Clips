@@ -24,33 +24,27 @@
 
 )
 
-(defrule retract-redundant-result-equal    ; retract leading 0s from result operand
+(defrule retract-redundant-operand          ; retract leading 0s first, second and result operands
         (declare (salience 100))
-        (operand1-length ?oplength)
-        (operand2-length ?oplength)        
-        (result-length ?oplength)
-        (sum ?reschar ?oplength)
-        ?fact <- (enum ?reschar 0)
-        =>
-        (retract ?fact)
-)
-
-
-(defrule retract-redundant-operand          ; retract leading 0s from first and second operands
-        (declare (salience 100))
-        (operand1-length ?oplength)
-        (operand2-length ?oplength) 
-        (first ?op1char ?oplength)
-        (second ?op2char ?oplength)
+        (operand1-length ?op1length)
+        (operand2-length ?op2length)
+        (result-length ?reslength) 
+        (first ?op1char ?op1length)
+        (second ?op2char ?op2length)
+        (sum ?reschar ?reslength)
         ?fact1 <- (enum ?op1char 0)
         ?fact2 <- (enum ?op2char 0)
+        ?fact3 <- (enum ?reschar 0)
         =>
         (retract ?fact1)
         (retract ?fact2)
+        (retract ?fact3)
 
 )
 
-(defrule retract-redundant-operand-result          ; retract numbers>5 from first and second operands
+
+
+(defrule retract-redundant-operand-result-efficiency          ; retract numbers>5 from first and second operands for
         (declare (salience 100))
         (operand1-length ?oplength)
         (operand2-length ?oplength) 
@@ -279,6 +273,149 @@
         (bind ?c_new (div (+ ?d1 ?d2 ?c) 10))
         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 3 ?l))))
 )
+
+(defrule middle-column-first-sum                ; middle column of cryptarithmetic problem
+        (declare (salience 20))
+        
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
+        
+        (first ?fn ?p&~1)
+        (not (second ?sn ?p&~1))
+        (sum ?sumn ?p&~1)
+
+        (test (eq ?p (+ ?place 1)))
+
+        (result-length ?result-length&~?p)
+        (operand1-length ?length-operand1)
+        (operand2-length ?length-operand2&~?length-operand1)
+        
+        (enum ?op1&?fn ?d1)
+        (enum ?res&?sumn ?d3)
+
+        (test (eq (mod (+ ?d1 ?c) 10) ?d3))   
+
+        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))    
+     
+
+        (test (if (eq ?fn ?sumn)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+
+        =>     
+       
+        (bind ?c_new (div (+ ?d1 ?c) 10))
+        (assert (previous_column (letterarray ?fn ?sumn $?la) (numberarray ?d1 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 2 ?l))))
+)
+
+(defrule result-length-column-equal-length-first-last     ; final column if first operand and result are equal lengths
+        
+        (declare (salience 30))
+
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
+
+        (operand1-length ?length1-operand)
+        (operand2-length ?length2-operand)
+
+        (result-length ?length_res&?length1-operand&~?length2-operand)
+        (test (eq ?length1-operand (+ ?place 1)))
+
+        (first ?fn ?p&?length_res)
+        (not (second ?sn ?p&?length_res))
+        (sum ?sumn ?p&?length_res)
+
+        (enum ?op1&?fn ?d1)
+        (enum ?res&?sumn ?d3)
+
+        (test (eq (+ ?d1 ?c) ?d3))   
+        
+        (not (assigned ?d1 ?d3 $?na))
+
+        ?current_count <- (count ?count)
+
+
+        (test (if (eq ?fn ?sumn)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+
+
+        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
+
+        =>     
+
+        (retract ?current_count)
+        (assert (count (+ ?count 1)))
+        (assert (assigned ?d1 ?d3 $?na))
+        (assert (terminated (letterarray ?fn ?sumn $?la) (numberarray ?d1 ?d3 $?na) (length (+ ?l 2))))
+
+)
+
+(defrule result-length-column-inequal-length-first-last   ; final column if operands and results are unequal lengths
+        
+        (declare (salience 30))
+
+        ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l))
+    
+        (operand1-length ?p)
+        (operand2-length ?p_new&~?p)
+        (result-length ?length_res)
+        (test (eq ?length_res (+ ?p 1)))
+        (test (eq ?p (+ ?place 1)))
+
+        (first ?fn ?p)
+        (not (second ?sn ?p))
+        (sum ?sumn ?p)
+        (sum ?sumn_1 ?length_res)
+
+        (test (eq ?length_res (+ ?p 1)))
+
+        (enum ?op1&?fn ?d1)
+        (enum ?res&?sumn ?d3)
+        (enum ?res_new&?sumn_1 1)
+
+        (not (assigned ?d1 ?d3 1 $?na))
+
+        ?current_count <- (count ?count)
+
+        (test (eq (+ ?d1 ?c) (+ 10 ?d3))) 
+
+        (test (if (eq ?fn ?sumn)
+                then
+                (eq ?d1 ?d3)
+                else
+                (neq ?d1 ?d3)))
+
+        (test (if (eq ?fn ?sumn_1)
+                then
+                (eq ?d1 1)
+                else
+                (neq ?d1 1))) 
+
+        (test (if (eq ?sumn ?sumn_1)
+                then
+                (eq ?d3 1)
+                else
+                (neq ?d3 1))) 
+
+        (test (eq (member$ ?fn ?la) (member$ ?d1 ?na)))
+        (test (eq (member$ ?sumn ?la) (member$ ?d3 ?na)))
+        (test (eq (member$ ?sumn_1 ?la) (member$ 1 ?na)))
+
+
+        =>     
+
+        (retract ?current_count)
+        (assert (count (+ ?count 1)))
+        (assert (assigned ?d1 ?d3 1 $?na))
+        (assert (terminated (letterarray ?fn ?sumn ?sumn_1 $?la) (numberarray ?d1 ?d3 1 $?na) (length (+ ?l 3))))
+
+)
+
 
 
 (defrule result-length-column-equal-length      ; final column if operands and results are equal lengths
