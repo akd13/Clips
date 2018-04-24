@@ -1,6 +1,55 @@
 (deffacts init                          ; initialize digits for letters
         (digit 0 1 2 3 4 5 6 7 8 9) 
 )
+
+(defrule input                          ; takes input
+        (declare (salience 5))
+        
+        =>
+        
+        (printout t "op1:")
+        (bind ?op1 (readline))
+        (printout t "op2:")
+        (bind ?op2 (readline))
+        (printout t "res:")
+        (bind ?res (readline))
+        (bind ?op1array (explode$ ?op1))
+        (bind ?op2array (explode$ ?op2))
+        (bind ?resarray (explode$ ?res))
+        (bind ?all_letters ?op1array ?op2array ?resarray)
+        (assert (letters ?all_letters))
+
+        (bind ?op1length (length$ (create$ ?op1array)))
+        (bind ?op2length (length$ (create$ ?op2array)))
+        (bind ?reslength (length$ (create$ ?resarray)))
+        (printout t "Length of operands is " ?op1length " & " ?op2length  " & result is " ?reslength crlf)
+        
+        (assert (operand1-length ?op1length))
+        (assert (operand2-length ?op2length))
+        (assert (result-length ?reslength))
+        
+        (loop-for-count (?cnt 1 ?op1length) do
+                (bind ?d (+ (- ?op1length ?cnt) 1))
+                (bind ?op1char (nth$ ?d ?op1array))
+                (assert (first ?op1char ?cnt))
+
+        )
+
+        (loop-for-count (?cnt 1 ?op2length) do
+                (bind ?d (+ (- ?op2length ?cnt) 1))
+                (bind ?op2char (nth$ ?d ?op2array))
+                (assert (second ?op2char ?cnt))
+
+        )
+
+        (loop-for-count (?cnt 1 ?reslength) do
+                (bind ?d (+ (- ?reslength ?cnt) 1))
+                (bind ?reschar (nth$ ?d ?resarray))
+                (assert (sum ?reschar ?cnt))
+        )
+
+        (assert (count 0))
+)
         
 (defrule enumerate-all-letters          ; enumerate all letters first
         (declare (salience 10))
@@ -10,29 +59,37 @@
         (assert (enum ?a ?d))
 )
 
-(defrule retract-redundant-res-inequal  ; retract all numbers except 1 from the residual result letter (e.g OH+NO=LOL will have L=1)
-        (declare (salience 100))
+(defrule retract-redundant-res-unequal  ; retract all numbers except 1 from the residual result letter (e.g OH+NO=LOL will have L=1)
+        (declare (salience 150))
         (operand1-length ?oplength)
         (operand2-length ?oplength)     
         (result-length ?reslength)
         (test (eq ?reslength (+ 1 ?oplength)))
         (sum ?reschar ?reslength)
         ?fact <- (enum ?reschar ?d&~1)
+        ?fact1 <- (enum ?reschar_n&~?reschar 1)
         =>
         (retract ?fact)
+        (retract ?fact1)
 
 )
 
-(defrule retract-redundant-operand          ; retract leading 0s first and second
+(defrule retract-redundant-operand1         ; retract leading 0s for operand1
         (declare (salience 100))
         (operand1-length ?op1length)
-        (operand2-length ?op2length)
         (first ?op1char ?op1length)
-        (second ?op2char ?op2length)
         ?fact1 <- (enum ?op1char 0)
-        ?fact2 <- (enum ?op2char 0)
         =>
         (retract ?fact1)
+
+)
+
+(defrule retract-redundant-operand2         ; retract leading 0s for operand2
+        (declare (salience 100))
+        (operand2-length ?op2length)
+        (second ?op2char ?op2length)
+        ?fact2 <- (enum ?op2char 0)
+        =>
         (retract ?fact2)
 
 )
@@ -48,9 +105,7 @@
 )
 
 
-
-
-(defrule retract-redundant-operand-result-efficiency          ; retract numbers>5 from first and second operands for
+(defrule retract-redundant-operand-result-unequal-efficiency          ; retract numbers>5 from first and second operands
         (declare (salience 100))
         (operand1-length ?oplength)
         (operand2-length ?oplength) 
@@ -59,10 +114,21 @@
         (first ?opchar ?oplength)
         (second ?opchar ?oplength)
         ?fact <- (enum ?opchar ?d&:(> 5 ?d))
-        ?letter <- (letter ?opchar)
         =>
         (retract ?fact)
-        (retract ?opchar)
+
+)
+
+(defrule retract-redundant-operand-result-equal-efficiency          ; retract numbers<5 from first and second operands
+        (declare (salience 100))
+        (operand1-length ?oplength)
+        (operand2-length ?oplength) 
+        (result-length ?oplength)
+        (first ?opchar ?oplength)
+        (second ?opchar ?oplength)
+        ?fact <- (enum ?opchar ?d&:(> ?d 4))
+        =>
+        (retract ?fact)
 
 )
 
@@ -92,9 +158,9 @@
         (second ?s1 1)
         (sum ?sum1 1)
 
-        (enum ?op1&?f1 ?d1)
-        (enum ?op2&?s1 ?d2)
-        (enum ?res&?sum1 ?d3)
+        (enum ?f1 ?d1)
+        (enum ?s1 ?d2)
+        (enum ?sum1 ?d3)
 
         (not (assigned ?d1 ?d2 ?d3))
         
@@ -129,7 +195,7 @@
 
 )
 
-(defrule only-one-column-inequal        ; handle single operands with two digit results (e.g A+B=CD)
+(defrule only-one-column-unequal        ; handle single operands with two digit results (e.g A+B=CD)
         (declare (salience 10))
         (operand1-length 1)
         (operand2-length 1) 
@@ -140,10 +206,10 @@
         (sum ?sum1 1)
         (sum ?sumn 2)
 
-        (enum ?op1&?f1 ?d1)
-        (enum ?op2&?s1 ?d2)
-        (enum ?res&?sum1 ?d3)
-        (enum ?resn&?sumn 1)
+        (enum ?f1 ?d1)
+        (enum ?s1 ?d2)
+        (enum ?sum1 ?d3)
+        (enum ?sumn 1)
 
         (not (assigned ?d1 ?d2 1 ?d3))
         
@@ -205,9 +271,9 @@
         (second ?s1 1)
         (sum ?sum1 1)
         
-        (enum ?op1&?f1 ?d1)
-        (enum ?op2&?s1 ?d2)
-        (enum ?res&?sum1 ?d3)
+        (enum ?f1 ?d1)
+        (enum ?s1 ?d2)
+        (enum ?sum1 ?d3)
         
         (test (eq (mod (+ ?d1 ?d2) 10) ?d3))
 
@@ -248,9 +314,9 @@
 
         (result-length ?result-length&~?p)
         
-        (enum ?op1&?fn ?d1)
-        (enum ?op2&?sn ?d2)
-        (enum ?res&?sumn ?d3)
+        (enum ?fn ?d1)
+        (enum ?sn ?d2)
+        (enum ?sumn ?d3)
 
         (test (eq (mod (+ ?d1 ?d2 ?c) 10) ?d3))   
 
@@ -282,7 +348,7 @@
         (assert (previous_column (letterarray ?fn ?sn ?sumn $?la) (numberarray ?d1 ?d2 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 3 ?l))))
 )
 
-(defrule middle-column-first-sum                ; middle column of cryptarithmetic problem
+(defrule middle-column-first-sum                ; middle column of cryptarithmetic problem when there's no second operand
         (declare (salience 20))
         
         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
@@ -297,8 +363,8 @@
         (operand1-length ?length-operand1)
         (operand2-length ?length-operand2&~?length-operand1)
         
-        (enum ?op1&?fn ?d1)
-        (enum ?res&?sumn ?d3)
+        (enum ?fn ?d1)
+        (enum ?sumn ?d3)
 
         (test (eq (mod (+ ?d1 ?c) 10) ?d3))   
 
@@ -318,7 +384,7 @@
         (assert (previous_column (letterarray ?fn ?sumn $?la) (numberarray ?d1 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 2 ?l))))
 )
 
-(defrule middle-column-second-sum                ; middle column of cryptarithmetic problem
+(defrule middle-column-second-sum                ; middle column of cryptarithmetic problem when there's no first operand
         (declare (salience 20))
         
         ?previous_column <- (previous_column (letterarray $?la) (numberarray $?na) (carryover ?c) (place ?place) (length ?l) )
@@ -333,8 +399,8 @@
         (operand2-length ?length-operand2)
         (operand1-length ?length-operand1&~?length-operand2)
         
-        (enum ?op1&?fn ?d1)
-        (enum ?res&?sumn ?d3)
+        (enum ?fn ?d1)
+        (enum ?sumn ?d3)
 
         (test (eq (mod (+ ?d1 ?c) 10) ?d3))   
 
@@ -354,7 +420,7 @@
         (assert (previous_column (letterarray ?fn ?sumn $?la) (numberarray ?d1 ?d3 $?na) (carryover ?c_new) (place (+ ?place 1)) (length (+ 2 ?l))))
 )
 
-(defrule result-length-column-equal-length-first-last     ; final column if first operand and result are equal lengths
+(defrule result-length-column-equal-length-first-last     ; final column if first operand and result are equal lengths and there's no second operand
         
         (declare (salience 30))
 
@@ -370,8 +436,8 @@
         (not (second ?sn ?p&?length_res))
         (sum ?sumn ?p&?length_res)
 
-        (enum ?op1&?fn ?d1)
-        (enum ?res&?sumn ?d3)
+        (enum ?fn ?d1)
+        (enum ?sumn ?d3)
 
         (test (eq (+ ?d1 ?c) ?d3))   
         
@@ -399,7 +465,7 @@
 
 )
 
-(defrule result-length-column-inequal-length-first-last   ; final column if operands and results are unequal lengths
+(defrule result-length-column-unequal-length-first-last   ; final column if operands and results are unequal lengths and there's no second operand
         
         (declare (salience 30))
 
@@ -418,9 +484,9 @@
 
         (test (eq ?length_res (+ ?p 1)))
 
-        (enum ?op1&?fn ?d1)
-        (enum ?res&?sumn ?d3)
-        (enum ?res_new&?sumn_1 1)
+        (enum ?fn ?d1)
+        (enum ?sumn ?d3)
+        (enum ?sumn_1 1)
 
         (not (assigned ?d1 ?d3 1 $?na))
 
@@ -461,7 +527,7 @@
 )
 
 
-(defrule result-length-column-equal-length-second-last     ; final column if first operand and result are equal lengths
+(defrule result-length-column-equal-length-second-last     ; final column if second operand and result are equal lengths and there's no first operand
         
         (declare (salience 30))
 
@@ -477,8 +543,8 @@
         (second ?fn ?p&?length_res)
         (sum ?sumn ?p&?length_res)
 
-        (enum ?op1&?fn ?d1)
-        (enum ?res&?sumn ?d3)
+        (enum ?fn ?d1)
+        (enum ?sumn ?d3)
 
         (test (eq (+ ?d1 ?c) ?d3))   
         
@@ -506,7 +572,7 @@
 
 )
 
-(defrule result-length-column-inequal-length-second-last   ; final column if operands and results are unequal lengths
+(defrule result-length-column-unequal-length-second-last   ; final column if operands and results are unequal lengths and there's no first operand
         
         (declare (salience 30))
 
@@ -525,9 +591,9 @@
 
         (test (eq ?length_res (+ ?p 1)))
 
-        (enum ?op1&?fn ?d1)
-        (enum ?res&?sumn ?d3)
-        (enum ?res_new&?sumn_1 1)
+        (enum ?fn ?d1)
+        (enum ?sumn ?d3)
+        (enum ?sumn_1 1)
 
         (not (assigned ?d1 ?d3 1 $?na))
 
@@ -585,9 +651,9 @@
         (second ?sn ?p&?length_res)
         (sum ?sumn ?p&?length_res)
 
-        (enum ?op1&?fn ?d1)
-        (enum ?op2&?sn ?d2)
-        (enum ?res&?sumn ?d3)
+        (enum ?fn ?d1)
+        (enum ?sn ?d2)
+        (enum ?sumn ?d3)
 
         (test (eq (+ ?d1 ?d2 ?c) ?d3))   
         
@@ -626,7 +692,7 @@
 
 )
 
-(defrule result-length-column-inequal-length    ; final column if operands and results are unequal lengths
+(defrule result-length-column-unequal-length    ; final column if operands and results are unequal lengths
         
         (declare (salience 30))
 
@@ -645,10 +711,10 @@
 
         (test (eq ?length_res (+ ?p 1)))
 
-        (enum ?op1&?fn ?d1)
-        (enum ?op2&?sn ?d2)
-        (enum ?res&?sumn ?d3)
-        (enum ?res_new&?sumn_1 1)
+        (enum ?fn ?d1)
+        (enum ?sn ?d2)
+        (enum ?sumn ?d3)
+        (enum ?sumn_1 1)
 
         (not (assigned ?d1 ?d2 ?d3 1 $?na))
 
@@ -708,7 +774,7 @@
 )
 
 
-(defrule finish
+(defrule finish                         ; fires when a solution is found, printing it
         (declare (salience 70))
 
         ?terminated <- (terminated (letterarray $?la) (numberarray $?na) (length ?l))
@@ -724,57 +790,8 @@
         (assert (done ?count))
 )
 
-(defrule no-solution
+(defrule no-solution                    ; fires when there's no solution, has the lowest salience so that it is checked at the end
         (count 0)
         =>
         (printout t " No solution!" crlf)
-)
-
-(defrule input
-        (declare (salience 5))
-        
-        =>
-        
-        (printout t "op1:")
-        (bind ?op1 (readline))
-        (printout t "op2:")
-        (bind ?op2 (readline))
-        (printout t "res:")
-        (bind ?res (readline))
-        (bind ?op1array (explode$ ?op1))
-        (bind ?op2array (explode$ ?op2))
-        (bind ?resarray (explode$ ?res))
-        (bind ?all_letters ?op1array ?op2array ?resarray)
-        (assert (letters ?all_letters))
-
-        (bind ?op1length (length$ (create$ ?op1array)))
-        (bind ?op2length (length$ (create$ ?op2array)))
-        (bind ?reslength (length$ (create$ ?resarray)))
-        (printout t "Length of operands is " ?op1length " & " ?op2length  " & result is " ?reslength crlf)
-        
-        (assert (operand1-length ?op1length))
-        (assert (operand2-length ?op2length))
-        (assert (result-length ?reslength))
-        
-        (loop-for-count (?cnt 1 ?op1length) do
-                (bind ?d (+ (- ?op1length ?cnt) 1))
-                (bind ?op1char (nth$ ?d ?op1array))
-                (assert (first ?op1char ?cnt))
-
-        )
-
-        (loop-for-count (?cnt 1 ?op2length) do
-                (bind ?d (+ (- ?op2length ?cnt) 1))
-                (bind ?op2char (nth$ ?d ?op2array))
-                (assert (second ?op2char ?cnt))
-
-        )
-
-        (loop-for-count (?cnt 1 ?reslength) do
-                (bind ?d (+ (- ?reslength ?cnt) 1))
-                (bind ?reschar (nth$ ?d ?resarray))
-                (assert (sum ?reschar ?cnt))
-        )
-
-        (assert (count 0))
 )
